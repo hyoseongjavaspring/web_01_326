@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Comments</title>
+    <script
+            src="http://code.jquery.com/jquery-3.3.1.min.js"
+            integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+            crossorigin="anonymous"></script>
+</head>
+<body>
+
+    <div style="display:inline-flex; flex-wrap:wrap;">
+        <div style="padding-right: 100px;">
+
+            userName <input type="text" id="userName"><br>
+            email <input type="text" id="email"><br>
+
+            <button onclick="fetchUserList()">GetAllUser</button>
+            <button onclick="addUser()">AddUser</button>
+            <button onclick="send()">PutUser</button>
+            <button onclick="send()">DeleteUser</button><br>
+
+        </div>
+
+        <div>
+            userId<input type="text" id="userId"><br>
+            content<input type="text" id="content"><br>
+
+            <button onclick="fetchCommentList()">fetchCommentList</button>
+            <button onclick="addComment()">AddComment</button>
+            <button onclick="send()">PutComment</button>
+            <button onclick="send()">DeleteComment</button><br>
+        </div>
+
+
+
+    </div>
+
+    <div id="comments-list">
+
+    </div>
+
+
+
+    <script>
+        function printCommentArray(response){
+            $('#comments-list').html();
+            for(let i = 0; i<response.length; i++){
+                printComment(response[i]);
+            }
+        }
+
+        function printComment(comment){
+            $('#comments-list').append(
+                `<div style="display: flex;">
+                            <div style="width: 150px;">${comment.username}</div>
+                            <div style="width: 350px; overflow: auto;">${comment.content}</div>
+                            <div><button onclick="delete()">삭제</button></div>
+                            </div>`
+            )
+        }
+
+        function printUserArray(response){
+            $('#comments-list').html();
+            for(let i = 0; i<response.length; i++){
+                printUser(response[i]);
+            }
+        }
+
+        function printUser(user){
+            $('#comments-list').append(
+                `<div style="display: flex;">
+                            <div style="width: 150px;">${user.username}</div>
+                            <div style="width: 350px; overflow: auto;">${user.email}</div>
+                            <div><button onclick="deleteUser()">삭제</button></div>
+                            </div>`
+            )
+        }
+
+        async function addUser(){
+            let userName = $("#userName").val();
+            let email = $("#email").val();
+            console.log(userName);
+            let requsetData = {
+                userName : userName,
+                email : email
+            };
+            let response = await $.post({
+                url: '/user',
+                contentType: 'application/json;',
+                dataType: 'json',
+                data: JSON.stringify(requsetData),
+            });
+            $("#comments-list").html(printUser(response));
+        }
+
+        async function addComment(){
+            try{
+                let userId = $("#userId").val();
+                let content = $("#content").val();
+                let requestData = {
+                    userId : 260,
+                    content : content
+                };
+                let response = await $.post({
+                    url: '/comment',
+                    contentType: 'application/json;',
+                    dataType: 'json',
+                    data: JSON.stringify(requestData),
+                });
+                $("#comments-list").html(printComment(response));
+            } catch (e) {
+                $('#comments-list').html(JSON.stringify(ex));
+            }
+
+
+        }
+
+        async function fetchUserList(){
+            try{
+                let response = await $.get('/user');
+                printCommentArray(response);
+            } catch (ex) {
+                $('#comments-list').html(JSON.stringify(ex));
+
+            }
+        }
+
+        async function fetchCommentList(){
+
+            try{
+                let response = await $.get('/comment');
+                printArray(response);
+            } catch (ex) {
+                $('#comments-list').html(JSON.stringify(ex));
+            }
+
+        }
+
+        async function deleteuser(){
+
+        }
+    </script>
+</body>
+</html>

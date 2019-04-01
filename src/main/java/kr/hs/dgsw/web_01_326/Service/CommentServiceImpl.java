@@ -20,8 +20,10 @@ public class CommentServiceImpl implements  CommentService{
     @Autowired
     private UserRepository userRepository;
 
-    //@PostConstruct
+    @PostConstruct
     private void init(){
+        if(this.commentRepository.count() > 0) return;
+
         User u = this.userRepository.save(new User("abcd", "abcd@dgsw"));
         this.userRepository.save(u);
         this.commentRepository.save(new Comment(u.getId(), "Hello11"));
