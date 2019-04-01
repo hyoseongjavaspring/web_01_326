@@ -48,13 +48,8 @@ public class UserServiceImpl implements UserService{
     @Override
     public boolean delete(Long id) {
         try{
-            this.commentRepository.deleteCommentsByUserId(id);
-            try{
-                this.userRepository.deleteById(id);
-                return true;
-            } catch (Exception e){
-                return false;
-            }
+            this.userRepository.deleteById(id);
+            return true;
         } catch (Exception e){
             return false;
         }
