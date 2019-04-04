@@ -5,7 +5,7 @@ import kr.hs.dgsw.web_01_326.Protocol.CommentUserNameProtocol;
 
 import java.util.List;
 
-public interface CommentService {
+public interface    CommentService {
     List<CommentUserNameProtocol> listAllComments();
     CommentUserNameProtocol add(Comment comment);
     CommentUserNameProtocol update(Comment comment);

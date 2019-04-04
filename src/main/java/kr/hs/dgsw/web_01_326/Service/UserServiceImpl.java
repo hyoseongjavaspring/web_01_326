@@ -38,6 +38,8 @@ public class UserServiceImpl implements UserService{
         return this.userRepository.findByEmail(user.getEmail())
                 .map(found ->{
                     found.setUserName(user.getUserName());
+                    found.setStoredPath(user.getStoredPath());
+                    found.setOriginalName(user.getOriginalName());
                     return this.userRepository.save(found);
                 })
                 .orElse((null));

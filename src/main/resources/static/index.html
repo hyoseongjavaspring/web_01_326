@@ -9,7 +9,6 @@
             crossorigin="anonymous"></script>
 </head>
 <body>
-
     <div style="display:inline-flex; flex-wrap:wrap;">
         <div style="padding-right: 100px;">
 
@@ -18,8 +17,8 @@
 
             <button onclick="fetchUserList()">GetAllUser</button>
             <button onclick="addUser()">AddUser</button>
-            <button onclick="send()">PutUser</button>
-            <button onclick="send()">DeleteUser</button><br>
+            <!--<button onclick="send()">PutUser</button>-->
+            <!--<button onclick="send()">DeleteUser</button><br>-->
 
         </div>
 
@@ -29,51 +28,87 @@
 
             <button onclick="fetchCommentList()">fetchCommentList</button>
             <button onclick="addComment()">AddComment</button>
-            <button onclick="send()">PutComment</button>
-            <button onclick="send()">DeleteComment</button><br>
+            <!--<button onclick="send()">PutComment</button>-->
+            <!--<button onclick="send()">DeleteComment</button><br>-->
         </div>
-
-
-
     </div>
 
     <div id="comments-list">
 
     </div>
 
+    <div id="users-list">
+
+    </div>
+
 
 
     <script>
+
+
+        async function uploadFile(button, email){
+            console.log(email);
+            try {
+                let fileInput = $("#upload_file")[0].files[0];
+                let formData = new FormData(); // <form></form>
+                formData.append("srcFile", fileInput);
+
+                console.log(formData);
+
+                let res = await $.ajax({
+                    type: 'POST',
+                    url: `/attachment/${email}`,
+                    data: formData,
+                    contentType: false,
+                    processData: false
+                })
+
+                printUser();
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
         function printCommentArray(response){
-            $('#comments-list').html();
+            $('#comments-list').html('');
             for(let i = 0; i<response.length; i++){
                 printComment(response[i]);
             }
         }
 
         function printComment(comment){
+
             $('#comments-list').append(
-                `<div style="display: flex;">
-                            <div style="width: 150px;">${comment.username}</div>
+                `<div style="display: flex;" id="line${comment.id}">
+                            <div style="width: 150px;">${comment.userName}</div>
                             <div style="width: 350px; overflow: auto;">${comment.content}</div>
-                            <div><button onclick="delete()">삭제</button></div>
+                            <div><button onclick="editComment(this, ${comment.id})">수정</button>
+                            <button onclick="removeComment(this, ${comment.id})">삭제</button></div>
                             </div>`
             )
         }
 
+        function printUser(){
+            $('#users-list').
+        }
+
         function printUserArray(response){
-            $('#comments-list').html();
+            $('#comments-list').html('');
             for(let i = 0; i<response.length; i++){
                 printUser(response[i]);
             }
         }
 
         function printUser(user){
+            console.log(user.email);
             $('#comments-list').append(
-                `<div style="display: flex;">
-                            <div style="width: 150px;">${user.username}</div>
+                `<div style="display: flex;" id="line${user.userId}">
+                            <div style="width: 150px;">${user.userName}</div>
                             <div style="width: 350px; overflow: auto;">${user.email}</div>
-                            <div><button onclick="deleteUser()">삭제</button></div>
+                            <div style="width: 150px;">${user.originalName}</div>
+                            <input type="file" id="upload_file">
+                            <button onclick="uploadFile(this, '${user.email}')">파일업로드</button>
+                            <button onclick="removeUser(this, ${user.userId})">삭제</button></div>
                             </div>`
             )
         }
@@ -116,11 +151,11 @@
 
 
         }
-
+        let obj = null;
         async function fetchUserList(){
             try{
                 let response = await $.get('/user');
-                printCommentArray(response);
+                printUserArray(response);
             } catch (ex) {
                 $('#comments-list').html(JSON.stringify(ex));
 
@@ -131,15 +166,99 @@
 
             try{
                 let response = await $.get('/comment');
-                printArray(response);
+                printCommentArray(response);
             } catch (ex) {
                 $('#comments-list').html(JSON.stringify(ex));
             }
 
         }
+        let btn = null;
+        async function editComment(button, id){
+            let line = $(`#line${id}`);
+            if($(button).text() === '수정'){
+                obj = line.find('div:nth-child(2)').html();
+                let input = `<input value="${obj}">`;
+                line.find(`div:nth-child(2)`).html(input);
+                line.find('input').focus();
+                $(button).text('확인');
+                $(button).next().text('취소');
+            } else if($(button).text() === '확인'){
+                if(obj !== line.find('input').val()){
+                    try {
+                        await $.ajax({
+                            type: 'PUT',
+                            url: '/comment',
+                            data: JSON.stringify({
+                                id,
+                                content : line.find('input').val()
+                            }),
+                            contentType: 'application/json',
+                            dataType: 'json',
+                            success: function (response) {
+                            console.log(response);
+                            let input2 = `<div style="width: 350px; overflow: auto;">${response.content}</div>`
+                            line.find(`div:nth-child(2)`).html(input2);
 
-        async function deleteuser(){
+                        }
+                        });
+                    } catch (e) {
+                        console.log("aa" + e);
+                    }
+                }
+                $(button).text('수정');
+                $(button).next().text('삭제');
+            }
+        }
 
+        async function removeComment(button, id){
+            if($(button).text() === '삭제') {
+                try {
+                    if (confirm('삭제하시겠습니까?') === true) {
+                        $.ajax({
+                            type: 'delete',
+                            url: `http://localhost:8080/comment/${id}`,
+                            success: function(response){
+                                $(`#line${id}`).remove();
+                                return;
+                            }
+                        });
+                    }
+                } catch (err) {
+                    console.log(JSON.stringify(err));
+                }
+            }
+            else if($(button).text() === '취소'){
+                line.find(`div:nth-child(2)`).html(content);
+                $(obj).text('수정');
+                $(obj).next().text('삭제');
+            }
+        }
+
+
+        let editValue = '';
+        async function removeUser(button, id){
+            if($(button).text() === '삭제') {
+
+
+                try {
+                    if (confirm('삭제하시겠습니까?') === true) {
+                        $.ajax({
+                            type: 'delete',
+                            url: `http://localhost:8080/user/${id}`,
+                        });
+                        if (response == true) {
+                            let line = $(`line${id}`).remove();
+                        } else alert('삭제하지 못했습니다.');
+
+                    }
+                } catch (err) {
+                    console.log(JSON.stringify(err));
+                }
+            } else if($(button).text() === '취소'){
+                line.find(`div:nth-child(2)`).html(content);
+                $(obj).text('수정');
+                $(obj).next().text('삭제');
+            }
         }
     </script>
 </body>

@@ -22,6 +22,9 @@ public class User {
     private String userName;
     private String email;
 
+    private String storedPath;
+    private String originalName;
+
 
     @CreationTimestamp
     private LocalDateTime joined;
