@@ -11,5 +11,5 @@ public interface UserService {
     User update(User user);
     boolean delete(Long id);
 
-    User view(String email);
+    User view(Long id);
 }

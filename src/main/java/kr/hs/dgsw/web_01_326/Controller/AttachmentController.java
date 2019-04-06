@@ -21,8 +21,8 @@ public class AttachmentController {
     @Autowired
     private UserService userService;
 
-    @PostMapping("/attachment/{email}")
-    public AttachmentProtocol upload(@RequestPart MultipartFile srcFile, @PathVariable String email){
+    @PostMapping("/attachment/{id}")
+    public AttachmentProtocol upload(@RequestPart MultipartFile srcFile, @PathVariable Long id){
         String destFileName = "C:/Project/JAVA/DGSW_JAVA_SPRING__/web_01_326/upload/"
                 + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy/mm/dd"))
                 + UUID.randomUUID().toString() + "_"
@@ -32,7 +32,7 @@ public class AttachmentController {
             destFile.getParentFile().mkdirs();
             srcFile.transferTo(destFile);
 
-            User user = userService.view(email);
+            User user = userService.view(id);
             user.setOriginalName(srcFile.getOriginalFilename());
             user.setStoredPath(destFileName);
             userService.update(user);

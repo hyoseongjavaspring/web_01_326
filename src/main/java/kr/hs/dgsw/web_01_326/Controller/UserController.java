@@ -21,9 +21,9 @@ public class UserController {
         return this.userService.listAllUsers();
     }
 
-    @GetMapping("/user/{email}")
-    public User view(@PathVariable String email){
-        return this.userService.view(email);
+    @GetMapping("/user/{id}")
+    public User view(@PathVariable Long id){
+        return this.userService.view(id);
     }
 
 
