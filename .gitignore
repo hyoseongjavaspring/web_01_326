@@ -12,6 +12,8 @@ HELP.md
 .springBeans
 .sts4-cache
 
+upload/
+
 ### IntelliJ IDEA ###
 .idea
 *.iws
