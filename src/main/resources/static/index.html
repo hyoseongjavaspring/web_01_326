@@ -46,38 +46,55 @@
     <script>
 
 
-        async function uploadFile(button, email){
-            console.log(email);
+        async function uploadFile(button, id){
             try {
-                let fileInput = $("#upload_file")[0].files[0];
+                let fileInput = $(`#upload_file${id}`)[0].files[0];
                 let formData = new FormData(); // <form></form>
                 formData.append("srcFile", fileInput);
 
-                console.log(formData);
-
-                let res = await $.ajax({
+                await $.ajax({
                     type: 'POST',
-                    url: `/attachment/${email}`,
+                    url: `/attachment/${id}`,
                     data: formData,
                     contentType: false,
-                    processData: false
+                    processData: false,
+                    success : function(response) {
+                        $(`#line${id}`).find('div:nth-child(3)').html(`${response.originalName}`);
+                    }
                 })
-
-                printUser();
             } catch (err) {
                 console.error(err);
             }
         }
 
-        function printCommentArray(response){
-            $('#comments-list').html('');
-            for(let i = 0; i<response.length; i++){
-                printComment(response[i]);
-            }
+
+
+        function printUserArray(response){
+            $('#comments-list').empty();
+            response.forEach((user) => {
+                printUser(user);
+            });
+        }
+        function printUser(user){
+            $('#comments-list').append(
+                `<div style="display: flex;" id="line${user.id}">
+                            <div style="width: 100px;">${user.userName}</div>
+                            <div style="width: 150px; overflow: auto;">${user.email}</div>
+                            <div style="width: 500px;">${user.originalName}</div>
+                            <input type="file" id="upload_file${user.id}">
+                            <button onclick="uploadFile(this, '${user.id}')">파일업로드</button>
+                            <button onclick="removeUser(this, ${user.id})">삭제</button></div>
+                            </div>`
+            );
         }
 
+        function printCommentArray(response){
+            $('#comments-list').empty();
+            response.forEach((comment) => {
+                printComment(comment);
+            })
+        }
         function printComment(comment){
-
             $('#comments-list').append(
                 `<div style="display: flex;" id="line${comment.id}">
                             <div style="width: 150px;">${comment.userName}</div>
@@ -88,65 +105,44 @@
             )
         }
 
-        function printUser(){
-            $('#users-list').
-        }
 
-        function printUserArray(response){
-            $('#comments-list').html('');
-            for(let i = 0; i<response.length; i++){
-                printUser(response[i]);
-            }
-        }
-
-        function printUser(user){
-            console.log(user.email);
-            $('#comments-list').append(
-                `<div style="display: flex;" id="line${user.userId}">
-                            <div style="width: 150px;">${user.userName}</div>
-                            <div style="width: 350px; overflow: auto;">${user.email}</div>
-                            <div style="width: 150px;">${user.originalName}</div>
-                            <input type="file" id="upload_file">
-                            <button onclick="uploadFile(this, '${user.email}')">파일업로드</button>
-                            <button onclick="removeUser(this, ${user.userId})">삭제</button></div>
-                            </div>`
-            )
-        }
 
         async function addUser(){
             let userName = $("#userName").val();
             let email = $("#email").val();
             console.log(userName);
-            let requsetData = {
-                userName : userName,
-                email : email
-            };
             let response = await $.post({
                 url: '/user',
                 contentType: 'application/json;',
                 dataType: 'json',
-                data: JSON.stringify(requsetData),
+                data: JSON.stringify({
+                    userName : userName,
+                    email : email
+                }),
+                success: function(response) {
+                    printUser(response);
+                }
             });
-            $("#comments-list").html(printUser(response));
         }
 
         async function addComment(){
             try{
                 let userId = $("#userId").val();
                 let content = $("#content").val();
-                let requestData = {
-                    userId : 260,
-                    content : content
-                };
                 let response = await $.post({
                     url: '/comment',
                     contentType: 'application/json;',
                     dataType: 'json',
-                    data: JSON.stringify(requestData),
+                    data: JSON.stringify({
+                        userId,
+                        content
+                    }),
+                    success : function(response) {
+                        printComment(response);
+                    }
                 });
-                $("#comments-list").html(printComment(response));
             } catch (e) {
-                $('#comments-list').html(JSON.stringify(ex));
+                console.log(JSON.stringify(e));
             }
 
 
@@ -156,23 +152,24 @@
             try{
                 let response = await $.get('/user');
                 printUserArray(response);
-            } catch (ex) {
-                $('#comments-list').html(JSON.stringify(ex));
+            } catch (e) {
+                console.log(JSON.stringify(e));
 
             }
         }
 
         async function fetchCommentList(){
-
             try{
                 let response = await $.get('/comment');
                 printCommentArray(response);
-            } catch (ex) {
-                $('#comments-list').html(JSON.stringify(ex));
+            } catch (e) {
+                console.log(JSON.stringify(e));
             }
 
         }
+
         let btn = null;
+
         async function editComment(button, id){
             let line = $(`#line${id}`);
             if($(button).text() === '수정'){
@@ -202,7 +199,7 @@
                         }
                         });
                     } catch (e) {
-                        console.log("aa" + e);
+                        console.log(JSON.stringify(e));
                     }
                 }
                 $(button).text('수정');
@@ -217,18 +214,19 @@
                         $.ajax({
                             type: 'delete',
                             url: `http://localhost:8080/comment/${id}`,
-                            success: function(response){
+                            success : function(response) {
                                 $(`#line${id}`).remove();
-                                return;
-                            }
+                            },
+                            error : function(error) {
+                                alert('삭제하지 못했습니다.');
+                            },
                         });
                     }
-                } catch (err) {
-                    console.log(JSON.stringify(err));
+                } catch (e) {
+                    console.log(JSON.stringify(e));
                 }
             }
             else if($(button).text() === '취소'){
-                line.find(`div:nth-child(2)`).html(content);
                 $(obj).text('수정');
                 $(obj).next().text('삭제');
             }
@@ -245,17 +243,18 @@
                         $.ajax({
                             type: 'delete',
                             url: `http://localhost:8080/user/${id}`,
+                            success : function(response) {
+                                $(`#line${id}`).remove();
+                            },
+                            error : function(error) {
+                                alert('삭제하지 못했습니다.');
+                            },
                         });
-                        if (response == true) {
-                            let line = $(`line${id}`).remove();
-                        } else alert('삭제하지 못했습니다.');
-
                     }
-                } catch (err) {
-                    console.log(JSON.stringify(err));
+                } catch (e) {
+                    console.log(JSON.stringify(e));
                 }
             } else if($(button).text() === '취소'){
-                line.find(`div:nth-child(2)`).html(content);
                 $(obj).text('수정');
                 $(obj).next().text('삭제');
             }
