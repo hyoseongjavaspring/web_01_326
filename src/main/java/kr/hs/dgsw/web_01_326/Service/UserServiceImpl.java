@@ -45,8 +45,6 @@ public class UserServiceImpl implements UserService{
                 .orElse((null));
     }
 
-
-    //user 삭제할 대 comment같이 삭제해야하나?
     @Override
     public boolean delete(Long id) {
         try{
