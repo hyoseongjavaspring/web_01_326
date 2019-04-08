@@ -26,7 +26,6 @@ public class UserController {
         return this.userService.view(id);
     }
 
-
     @PostMapping("/user")
     public User add(@RequestBody User user){
         return this.userService.add(user);
@@ -41,4 +40,5 @@ public class UserController {
     public boolean delete(@PathVariable Long id){
         return this.userService.delete(id);
     }
+
 }

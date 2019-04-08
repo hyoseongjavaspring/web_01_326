@@ -1,11 +1,20 @@
 package kr.hs.dgsw.web_01_326.Service;
 
 import kr.hs.dgsw.web_01_326.Domain.User;
+import kr.hs.dgsw.web_01_326.Protocol.AttachmentProtocol;
 import kr.hs.dgsw.web_01_326.Repository.CommentRepository;
 import kr.hs.dgsw.web_01_326.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.FileCopyUtils;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.net.URLConnection;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,9 +24,6 @@ public class UserServiceImpl implements UserService{
 
     @Autowired
     private UserRepository userRepository;
-
-    @Autowired
-    private CommentRepository commentRepository;
 
     @Override
     public List<User> listAllUsers() {
@@ -43,6 +49,13 @@ public class UserServiceImpl implements UserService{
                     return this.userRepository.save(found);
                 })
                 .orElse((null));
+    }
+
+    @Override
+    public AttachmentProtocol download(Long id) {
+        return this.userRepository.findById(id)
+            .map(found -> new AttachmentProtocol(found.getStoredPath(), found.getOriginalName()))
+            .orElse(null);
     }
 
     @Override
