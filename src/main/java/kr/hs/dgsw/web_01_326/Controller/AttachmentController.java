@@ -49,7 +49,7 @@ public class AttachmentController {
     @GetMapping("/attachment/{type}/{id}")
     public void download(@PathVariable String type, @PathVariable Long id, HttpServletRequest request, HttpServletResponse response) {
         if(type.equals("user")){
-            AttachmentProtocol attachmentProtocol = this.userService.download(id);
+            AttachmentProtocol attachmentProtocol = this.userService.getPathById(id);
 
             try {
                 File file = new File(attachmentProtocol.getStoredPath());

@@ -16,5 +16,5 @@ public interface UserService {
 
     User view(Long id);
 
-    AttachmentProtocol download(Long id);
+    AttachmentProtocol getPathById(Long id);
 }

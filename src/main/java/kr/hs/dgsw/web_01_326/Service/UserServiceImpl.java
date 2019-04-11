@@ -52,7 +52,7 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public AttachmentProtocol download(Long id) {
+    public AttachmentProtocol getPathById(Long id) {
         return this.userRepository.findById(id)
             .map(found -> new AttachmentProtocol(found.getStoredPath(), found.getOriginalName()))
             .orElse(null);
